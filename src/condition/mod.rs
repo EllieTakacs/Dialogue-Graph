@@ -136,8 +136,7 @@ where
 impl<'de, T, U> Function<'de, T, U>
 where
     T: Serialize + Deserialize<'de>,
-    U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
-    U: 'de,
+    U: Fn(&T) -> bool + Serialize + Deserialize<'de> + 'de,
 {
     pub fn new(data: T, condition: U) -> Self {
         Self {
@@ -151,8 +150,7 @@ where
 impl<'de, T, U> Condition<'de> for Function<'de, T, U>
 where
     T: Serialize + Deserialize<'de>,
-    U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
-    U: 'de,
+    U: Fn(&T) -> bool + Serialize + Deserialize<'de> + 'de,
 {
     fn evaluate(&self) -> bool {
         (self.condition)(&self.data)

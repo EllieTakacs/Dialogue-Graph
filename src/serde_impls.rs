@@ -579,8 +579,7 @@ where
 impl<'de, T, U> Deserialize<'de> for Function<'de, T, U>
 where
     T: Serialize + Deserialize<'de>,
-    U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
-    U: 'de,
+    U: Fn(&T) -> bool + Serialize + Deserialize<'de> + 'de,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
