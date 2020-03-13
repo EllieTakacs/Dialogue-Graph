@@ -19,9 +19,9 @@ pub struct Node {
 #[derive(Serialize)]
 pub struct Edge<'de, T>
 where
-    T: Condition + Serialize + Deserialize<'de>,
+    T: Condition<'de> + Serialize + Deserialize<'de>,
 {
-    pub condition: Box<T>,
+    pub condition: T,
     #[serde(skip)]
     phantom: PhantomData<&'de T>,
 }
@@ -31,15 +31,16 @@ where
 #[derive(Serialize)]
 pub struct DialogueGraph<'a, 'de, T>
 where
-    T: Condition + Serialize + Deserialize<'de>,
+    T: Condition<'de> + Serialize + Deserialize<'de>,
 {
     pub data: Graph<Node, Edge<'de, T>, Directed, u32>,
+    #[serde(skip)]
     phantom: PhantomData<&'a T>,
 }
 
 impl<'a, 'de, T> DialogueGraph<'a, 'de, T>
 where
-    T: Condition + Serialize + Deserialize<'de>,
+    T: Condition<'de> + Serialize + Deserialize<'de>,
 {
     pub fn new() -> Self {
         Self {
@@ -69,14 +70,14 @@ where
 /// Iterator over open edges leading out of a given node
 pub struct OpenEdges<'a, 'de, T>
 where
-    T: Condition + Serialize + Deserialize<'de>,
+    T: Condition<'de> + Serialize + Deserialize<'de>,
 {
     edges: Edges<'a, Edge<'de, T>, Directed>,
 }
 
 impl<'a, 'de, T> Iterator for OpenEdges<'a, 'de, T>
 where
-    T: Condition + Serialize + Deserialize<'de>,
+    T: Condition<'de> + Serialize + Deserialize<'de>,
 {
     type Item = &'a Edge<'de, T>;
     fn next(&mut self) -> Option<&'a Edge<'de, T>> {

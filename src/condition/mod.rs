@@ -25,7 +25,8 @@ pub struct Not<'de, T>
 where
     T: Condition<'de> + Serialize + Deserialize<'de>,
 {
-    condition: Box<T>,
+    condition: T,
+    #[serde(skip)]
     phantom: PhantomData<&'de T>,
 }
 
@@ -45,8 +46,9 @@ pub struct And<'de, T>
 where
     T: Condition<'de> + Serialize + Deserialize<'de>,
 {
-    left: Box<T>,
-    right: Box<T>,
+    left: T,
+    right: T,
+    #[serde(skip)]
     phantom: PhantomData<&'de T>,
 }
 
