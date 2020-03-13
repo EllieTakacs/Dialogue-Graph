@@ -16,6 +16,8 @@ pub struct Node {
     pub content: String,
 }
 
+/// A directed connection between two `Node` objects, with a condition that
+/// predicates the ability to traverse it.
 #[derive(Serialize)]
 pub struct Edge<'de, T>
 where
@@ -67,7 +69,7 @@ where
     }
 }
 
-/// Iterator over open edges leading out of a given node
+/// Iterator over open edges leading out of a given node.
 pub struct OpenEdges<'a, 'de, T>
 where
     T: Condition<'de> + Serialize + Deserialize<'de>,
