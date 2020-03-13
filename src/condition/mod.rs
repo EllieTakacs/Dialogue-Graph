@@ -30,6 +30,18 @@ where
     phantom: PhantomData<&'de T>,
 }
 
+impl<'de, T> Not<'de, T>
+where
+    T: Condition<'de> + Serialize + Deserialize<'de>,
+{
+    pub fn new(condition: T) -> Self {
+        Self {
+            condition,
+            phantom: PhantomData,
+        }
+    }
+}
+
 impl<'de, T> Condition<'de> for Not<'de, T>
 where
     T: Condition<'de> + Serialize + Deserialize<'de>,
@@ -52,6 +64,19 @@ where
     phantom: PhantomData<&'de T>,
 }
 
+impl<'de, T> And<'de, T>
+where
+    T: Condition<'de> + Serialize + Deserialize<'de>,
+{
+    pub fn new(left: T, right: T) -> Self {
+        Self {
+            left,
+            right,
+            phantom: PhantomData,
+        }
+    }
+}
+
 impl<'de, T> Condition<'de> for And<'de, T>
 where
     T: Condition<'de> + Serialize + Deserialize<'de>,
@@ -68,9 +93,23 @@ pub struct Or<'de, T>
 where
     T: Condition<'de> + Serialize + Deserialize<'de>,
 {
-    left: Box<T>,
-    right: Box<T>,
+    left: T,
+    right: T,
+    #[serde(skip)]
     phantom: PhantomData<&'de T>,
+}
+
+impl<'de, T> Condition<'de> for Or<'de, T>
+where
+    T: Condition<'de> + Serialize + Deserialize<'de>,
+{
+    pub fn new(left: T, right: T) -> Self {
+        Self {
+            left,
+            right,
+            phantom: PhantomData,
+        }
+    }
 }
 
 impl<'de, T> Condition<'de> for Or<'de, T>
@@ -79,25 +118,5 @@ where
 {
     fn evaluate(&self) -> bool {
         self.left.evaluate() || self.right.evaluate()
-    }
-}
-
-/// A condition that evaluates an inner function with data
-#[derive(Serialize)]
-pub struct Function<'de, D, F>
-where
-    F: Fn(&D) -> bool,
-    D: Serialize + Deserialize<'de>,
-{
-    data: D,
-    condition: F,
-}
-
-impl<'de, D, F> Condition<'de> for Function<'de, D, F>
-where
-    F: Fn(&D) -> bool,
-{
-    fn evaluate(&self) -> bool {
-        (self.condition)(&self.data)
     }
 }

@@ -309,10 +309,7 @@ where
                 let condition = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(0, &self))?;
-                Ok(Not {
-                    condition: Box::new(condition),
-                    phantom: PhantomData,
-                })
+                Ok(Not::new(condition))
             }
 
             fn visit_map<V>(self, mut map: V) -> Result<Not<'de, T>, V::Error>
@@ -332,10 +329,7 @@ where
                 }
 
                 let condition = condition.ok_or_else(|| de::Error::missing_field("condition"))?;
-                Ok(Not {
-                    condition: Box::new(condition),
-                    phantom: PhantomData,
-                })
+                Ok(Not::new(condition))
             }
         }
 
@@ -425,19 +419,15 @@ where
                 let right = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(1, &self))?;
-                Ok(And {
-                    left: Box::new(left),
-                    right: Box::new(right),
-                    phantom: PhantomData,
-                })
+                Ok(And::new(left, right))
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<Not<'de, T>, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<And<'de, T>, V::Error>
             where
                 V: MapAccess<'de>,
             {
-                let mut left = None;
-                let mut right = None;
+                let mut left: Option<T> = None;
+                let mut right: Option<T> = None;
                 while let Some(key) = map.next_key()? {
                     match key {
                         Field::Left => {
@@ -450,18 +440,15 @@ where
                             if right.is_some() {
                                 return Err(de::Error::duplicate_field("right"));
                             }
+                            right = Some(map.next_value()?);
                         }
                     }
                 }
 
                 let left = left.ok_or_else(|| de::Error::missing_field("left"))?;
-                let right = left.ok_or_else(|| de::Error::missing_field("right"))?;
+                let right = right.ok_or_else(|| de::Error::missing_field("right"))?;
 
-                Ok(And {
-                    left: Box::new(left),
-                    right: Box::new(right),
-                    phantom: PhantomData,
-                })
+                Ok(And::new(left, right))
             }
         }
 
@@ -551,11 +538,7 @@ where
                 let right = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(1, &self))?;
-                Ok(Or {
-                    left: Box::new(left),
-                    right: Box::new(right),
-                    phantom: PhantomData,
-                })
+                Ok(Or::new(left, right))
             }
 
             fn visit_map<V>(self, mut map: V) -> Result<Or<'de, T>, V::Error>
@@ -576,18 +559,15 @@ where
                             if right.is_some() {
                                 return Err(de::Error::duplicate_field("right"));
                             }
+                            right = Some(map.next_value()?);
                         }
                     }
                 }
 
                 let left = left.ok_or_else(|| de::Error::missing_field("left"))?;
-                let right = left.ok_or_else(|| de::Error::missing_field("right"))?;
+                let right = right.ok_or_else(|| de::Error::missing_field("right"))?;
 
-                Ok(Or {
-                    left: Box::new(left),
-                    right: Box::new(right),
-                    phantom: PhantomData,
-                })
+                Ok(Or::new(left, right))
             }
         }
 
