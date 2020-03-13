@@ -623,7 +623,7 @@ where
         struct FunctionVisitor<'de, T, U>
         where
             T: Serialize + Deserialize<'de>,
-            for<'a> U: Fn(&'a T) -> bool + Serialize + Deserialize<'de>,
+            U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
         {
             phantom: PhantomData<&'de T>,
             phantom2: PhantomData<&'de U>,
@@ -632,7 +632,7 @@ where
         impl<'de, T, U> FunctionVisitor<'de, T, U>
         where
             T: Serialize + Deserialize<'de>,
-            for<'a> U: Fn(&'a T) -> bool + Serialize + Deserialize<'de>,
+            U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
         {
             fn new() -> Self {
                 Self {
@@ -645,7 +645,7 @@ where
         impl<'de, T, U> Visitor<'de> for FunctionVisitor<'de, T, U>
         where
             T: Serialize + Deserialize<'de>,
-            for<'a> U: Fn(&'a T) -> bool + Serialize + Deserialize<'de>,
+            U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
         {
             type Value = Function<'de, T, U>;
 
