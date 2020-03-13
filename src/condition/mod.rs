@@ -121,7 +121,11 @@ where
     }
 }
 
-/// A condition that evaluates an inner function with data
+/// A condition that evaluates an inner function with data.
+///
+/// To create a closure that implements serde's [`Serialize`] and
+/// [`Deserialize`] traits, you can use the
+/// [`serde_closure` crate](https://docs.rs/serde_closure).
 #[derive(Serialize)]
 pub struct Function<'de, T, U>
 where
