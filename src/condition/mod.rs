@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 
 /// A conditional weight that must evaluate as true in order to be avaliable to
 /// make an edge clear to traverse.
-pub trait Condition<'de>: Deserialize<'de> {
+pub trait Condition<'de>: Serialize + Deserialize<'de> {
     /// Returns whether the node can be traversed based on its criteria.
     fn evaluate(&self) -> bool;
 }
