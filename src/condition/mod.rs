@@ -130,6 +130,7 @@ where
 {
     data: T,
     condition: U,
+    #[serde(skip)]
     phantom: PhantomData<&'de T>,
 }
 
