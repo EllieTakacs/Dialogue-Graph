@@ -1,5 +1,5 @@
 use crate::{
-    condition::{And, Condition, Not, Or},
+    condition::{And, Condition, Function, Not, Or},
     DialogueGraph, Edge,
 };
 use serde::{
@@ -576,136 +576,128 @@ where
     }
 }
 
-// impl<'de, T, U> Deserialize<'de> for Function<'de, T, U>
-// where
-//     T: Serialize + Deserialize<'de>,
-//     for<'a> U: FnOnce(&'a U) -> bool + Serialize + Deserialize<'de>,
-// {
-//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-//     where
-//         D: Deserializer<'de>,
-//     {
-//         enum Field {
-//             Data,
-//             Condition,
-//         };
-//
-//         impl<'de> Deserialize<'de> for Field {
-//             fn deserialize<D>(deserializer: D) -> Result<Field, D::Error>
-//             where
-//                 D: Deserializer<'de>,
-//             {
-//                 struct FieldVisitor;
-//
-//                 impl<'de> Visitor<'de> for FieldVisitor {
-//                     type Value = Field;
-//
-//                     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-//                         formatter.write_str("`data` or `condition`")
-//                     }
-//
-//                     fn visit_str<E>(self, value: &str) -> Result<Field, E>
-//                     where
-//                         E: de::Error,
-//                     {
-//                         match value {
-//                             "data" => Ok(Field::Data),
-//                             "condition" => Ok(Field::Condition),
-//                             _ => Err(de::Error::unknown_field(value, FIELDS)),
-//                         }
-//                     }
-//                 }
-//
-//                 deserializer.deserialize_identifier(FieldVisitor)
-//             }
-//         }
-//
-//         struct FunctionVisitor<'de, T, U>
-//         where
-//             T: Serialize + Deserialize<'de>,
-//             for<'a> U: FnOnce(&'a U) -> bool + Serialize + Deserialize<'de>,
-//         {
-//             phantom: PhantomData<&'de T>,
-//             phantom2: PhantomData<&'de U>,
-//         };
-//
-//         impl<'de, T, U> FunctionVisitor<'de, T, U>
-//         where
-//             T: Serialize + Deserialize<'de>,
-//             for<'a> U: FnOnce(&'a U) -> bool + Serialize + Deserialize<'de>,
-//         {
-//             fn new() -> Self {
-//                 Self {
-//                     phantom: PhantomData,
-//                     phantom2: PhantomData,
-//                 }
-//             }
-//         }
-//
-//         impl<'de, T, U> Visitor<'de> for FunctionVisitor<'de, T, U>
-//         where
-//             T: Serialize + Deserialize<'de>,
-//             U: FnOnce(&U) -> bool + Serialize + Deserialize<'de>,
-//         {
-//             type Value = Function<'de, T, U>;
-//
-//             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-//                 formatter.write_str("struct Function")
-//             }
-//
-//             fn visit_seq<V>(self, mut seq: V) -> Result<Function<'de, T, U>, V::Error>
-//             where
-//                 V: SeqAccess<'de>,
-//             {
-//                 let data = seq
-//                     .next_element()?
-//                     .ok_or_else(|| de::Error::invalid_length(0, &self))?;
-//                 let condition = seq
-//                     .next_element()?
-//                     .ok_or_else(|| de::Error::invalid_length(1, &self))?;
-//                 Ok(Function {
-//                     data,
-//                     condition,
-//                     phantom: PhantomData,
-//                     phantom2: PhantomData,
-//                 })
-//             }
-//
-//             fn visit_map<V>(self, mut map: V) -> Result<Function<'de, T, U>, V::Error>
-//             where
-//                 V: MapAccess<'de>,
-//             {
-//                 let mut data = None;
-//                 let mut condition = None;
-//                 while let Some(key) = map.next_key()? {
-//                     match key {
-//                         Field::Data => {
-//                             if data.is_some() {
-//                                 return Err(de::Error::duplicate_field("data"));
-//                             }
-//                             data = Some(map.next_value()?);
-//                         }
-//                         Field::Condition => {
-//                             if condition.is_some() {
-//                                 return Err(de::Error::duplicate_field("condition"));
-//                             }
-//                         }
-//                     }
-//                 }
-//
-//                 let data = data.ok_or_else(|| de::Error::missing_field("data"))?;
-//                 let condition = condition.ok_or_else(|| de::Error::missing_field("condition"))?;
-//
-//                 Ok(Function {
-//                     data,
-//                     condition,
-//                     phantom: PhantomData,
-//                     phantom2: PhantomData,
-//                 })
-//             }
-//         }
-//
-//         const FIELDS: &'static [&'static str] = &["data", "condition"];
-//         deserializer.deserialize_struct("Function", FIELDS, FunctionVisitor::new())
-//     }
-// }
+impl<'de, T, U> Deserialize<'de> for Function<'de, T, U>
+where
+    T: Serialize + Deserialize<'de>,
+    U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
+    U: 'de,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        enum Field {
+            Data,
+            Condition,
+        };
+
+        impl<'de> Deserialize<'de> for Field {
+            fn deserialize<D>(deserializer: D) -> Result<Field, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                struct FieldVisitor;
+
+                impl<'de> Visitor<'de> for FieldVisitor {
+                    type Value = Field;
+
+                    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                        formatter.write_str("`data` or `condition`")
+                    }
+
+                    fn visit_str<E>(self, value: &str) -> Result<Field, E>
+                    where
+                        E: de::Error,
+                    {
+                        match value {
+                            "data" => Ok(Field::Data),
+                            "condition" => Ok(Field::Condition),
+                            _ => Err(de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+
+                deserializer.deserialize_identifier(FieldVisitor)
+            }
+        }
+
+        struct FunctionVisitor<'de, T, U>
+        where
+            T: Serialize + Deserialize<'de>,
+            for<'a> U: Fn(&'a T) -> bool + Serialize + Deserialize<'de>,
+        {
+            phantom: PhantomData<&'de T>,
+            phantom2: PhantomData<&'de U>,
+        };
+
+        impl<'de, T, U> FunctionVisitor<'de, T, U>
+        where
+            T: Serialize + Deserialize<'de>,
+            for<'a> U: Fn(&'a T) -> bool + Serialize + Deserialize<'de>,
+        {
+            fn new() -> Self {
+                Self {
+                    phantom: PhantomData,
+                    phantom2: PhantomData,
+                }
+            }
+        }
+
+        impl<'de, T, U> Visitor<'de> for FunctionVisitor<'de, T, U>
+        where
+            T: Serialize + Deserialize<'de>,
+            for<'a> U: Fn(&'a T) -> bool + Serialize + Deserialize<'de>,
+        {
+            type Value = Function<'de, T, U>;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("struct Function")
+            }
+
+            fn visit_seq<V>(self, mut seq: V) -> Result<Function<'de, T, U>, V::Error>
+            where
+                V: SeqAccess<'de>,
+            {
+                let data = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(0, &self))?;
+                let condition = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(1, &self))?;
+                Ok(Function::new(data, condition))
+            }
+
+            fn visit_map<V>(self, mut map: V) -> Result<Function<'de, T, U>, V::Error>
+            where
+                V: MapAccess<'de>,
+            {
+                let mut data = None;
+                let mut condition = None;
+                while let Some(key) = map.next_key()? {
+                    match key {
+                        Field::Data => {
+                            if data.is_some() {
+                                return Err(de::Error::duplicate_field("data"));
+                            }
+                            data = Some(map.next_value()?);
+                        }
+                        Field::Condition => {
+                            if condition.is_some() {
+                                return Err(de::Error::duplicate_field("condition"));
+                            }
+                            condition = Some(map.next_value()?);
+                        }
+                    }
+                }
+
+                let data = data.ok_or_else(|| de::Error::missing_field("data"))?;
+                let condition = condition.ok_or_else(|| de::Error::missing_field("condition"))?;
+
+                Ok(Function::new(data, condition))
+            }
+        }
+
+        const FIELDS: &'static [&'static str] = &["data", "condition"];
+        deserializer.deserialize_struct("Function", FIELDS, FunctionVisitor::new())
+    }
+}

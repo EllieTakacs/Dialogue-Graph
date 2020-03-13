@@ -121,24 +121,40 @@ where
     }
 }
 
-// /// A condition that evaluates an inner function with data
-// #[derive(Serialize)]
-// pub struct Function<'de, T, U>
-// where
-//     T: Serialize + Deserialize<'de>,
-//     for<'a> U: Fn(&'a T) -> bool + Serialize + Deserialize<'de>,
-// {
-//     data: T,
-//     condition: U,
-//     phantom: PhantomData<&'de T>,
-// }
-//
-// impl<'de, T, U> Function<'de, T, U>
-// where
-//     T: Serialize + Deserialize<'de>,
-//     for<'a> U: Fn(&'a T) -> bool + Serialize + Deserialize<'de>,
-// {
-//     fn evaluate(&self) -> bool {
-//         (self.condition)(&self.data)
-//     }
-// }
+/// A condition that evaluates an inner function with data
+#[derive(Serialize)]
+pub struct Function<'de, T, U>
+where
+    T: Serialize + Deserialize<'de>,
+    U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
+{
+    data: T,
+    condition: U,
+    phantom: PhantomData<&'de T>,
+}
+
+impl<'de, T, U> Function<'de, T, U>
+where
+    T: Serialize + Deserialize<'de>,
+    U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
+    U: 'de,
+{
+    pub fn new(data: T, condition: U) -> Self {
+        Self {
+            data,
+            condition,
+            phantom: PhantomData,
+        }
+    }
+}
+
+impl<'de, T, U> Condition<'de> for Function<'de, T, U>
+where
+    T: Serialize + Deserialize<'de>,
+    U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
+    U: 'de,
+{
+    fn evaluate(&self) -> bool {
+        (self.condition)(&self.data)
+    }
+}
