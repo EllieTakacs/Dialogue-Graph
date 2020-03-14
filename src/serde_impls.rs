@@ -11,7 +11,7 @@ use std::marker::PhantomData;
 
 impl<'de, T> Deserialize<'de> for Edge<T>
 where
-    for<'a> T: Condition<'a> + Serialize + Deserialize<'a> + 'de,
+    T: Condition,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -50,16 +50,16 @@ where
             }
         }
 
-        struct EdgeVisitor<'de, T>
+        struct EdgeVisitor<T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            T: Condition,
         {
-            phantom: PhantomData<&'de T>,
+            phantom: PhantomData<T>,
         };
 
-        impl<'de, T> EdgeVisitor<'de, T>
+        impl<T> EdgeVisitor<T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            T: Condition,
         {
             fn new() -> Self {
                 Self {
@@ -68,9 +68,9 @@ where
             }
         }
 
-        impl<'de, T> Visitor<'de> for EdgeVisitor<'de, T>
+        impl<'de, T> Visitor<'de> for EdgeVisitor<T>
         where
-            for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
+            T: Condition,
         {
             type Value = Edge<T>;
 
@@ -85,7 +85,7 @@ where
                 let condition = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(0, &self))?;
-                Ok(Edge { condition })
+                Ok(Edge::new(condition))
             }
 
             fn visit_map<V>(self, mut map: V) -> Result<Edge<T>, V::Error>
@@ -105,7 +105,7 @@ where
                 }
 
                 let condition = condition.ok_or_else(|| de::Error::missing_field("condition"))?;
-                Ok(Edge { condition })
+                Ok(Edge::new(condition))
             }
         }
 
@@ -116,7 +116,7 @@ where
 
 impl<'de, T> Deserialize<'de> for DialogueGraph<T>
 where
-    for<'a> T: Condition<'a> + Serialize + Deserialize<'a> + 'de,
+    T: Condition,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -155,16 +155,16 @@ where
             }
         }
 
-        struct DialogueGraphVisitor<'de, T>
+        struct DialogueGraphVisitor<T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            T: Condition,
         {
-            phantom: PhantomData<&'de T>,
+            phantom: PhantomData<T>,
         };
 
-        impl<'de, T> DialogueGraphVisitor<'de, T>
+        impl<T> DialogueGraphVisitor<T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            T: Condition,
         {
             fn new() -> Self {
                 Self {
@@ -173,9 +173,9 @@ where
             }
         }
 
-        impl<'de, T> Visitor<'de> for DialogueGraphVisitor<'de, T>
+        impl<'de, T> Visitor<'de> for DialogueGraphVisitor<T>
         where
-            for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
+            T: Condition,
         {
             type Value = DialogueGraph<T>;
 
@@ -221,7 +221,7 @@ where
 
 impl<'de, T> Deserialize<'de> for Not<T>
 where
-    for<'a> T: Condition<'a> + Serialize + Deserialize<'a> + 'de,
+    T: Condition,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -260,16 +260,16 @@ where
             }
         }
 
-        struct NotVisitor<'de, T>
+        struct NotVisitor<T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            T: Condition,
         {
-            phantom: PhantomData<&'de T>,
+            phantom: PhantomData<T>,
         };
 
-        impl<'de, T> NotVisitor<'de, T>
+        impl<T> NotVisitor<T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            T: Condition,
         {
             fn new() -> Self {
                 Self {
@@ -278,9 +278,9 @@ where
             }
         }
 
-        impl<'de, T> Visitor<'de> for NotVisitor<'de, T>
+        impl<'de, T> Visitor<'de> for NotVisitor<T>
         where
-            for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
+            T: Condition,
         {
             type Value = Not<T>;
 
@@ -326,7 +326,7 @@ where
 
 impl<'de, T> Deserialize<'de> for And<T>
 where
-    for<'a> T: Condition<'a> + Serialize + Deserialize<'a> + 'de,
+    T: Condition,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -367,16 +367,16 @@ where
             }
         }
 
-        struct AndVisitor<'de, T>
+        struct AndVisitor<T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            T: Condition,
         {
-            phantom: PhantomData<&'de T>,
+            phantom: PhantomData<T>,
         };
 
-        impl<'de, T> AndVisitor<'de, T>
+        impl<T> AndVisitor<T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            T: Condition,
         {
             fn new() -> Self {
                 Self {
@@ -385,9 +385,9 @@ where
             }
         }
 
-        impl<'de, T> Visitor<'de> for AndVisitor<'de, T>
+        impl<'de, T> Visitor<'de> for AndVisitor<T>
         where
-            for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
+            T: Condition,
         {
             type Value = And<T>;
 
@@ -445,7 +445,7 @@ where
 
 impl<'de, T> Deserialize<'de> for Or<T>
 where
-    for<'a> T: Condition<'a> + Serialize + Deserialize<'a> + 'de,
+    T: Condition,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -486,16 +486,16 @@ where
             }
         }
 
-        struct OrVisitor<'de, T>
+        struct OrVisitor<T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            T: Condition,
         {
-            phantom: PhantomData<&'de T>,
+            phantom: PhantomData<T>,
         };
 
-        impl<'de, T> OrVisitor<'de, T>
+        impl<T> OrVisitor<T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            T: Condition,
         {
             fn new() -> Self {
                 Self {
@@ -504,9 +504,9 @@ where
             }
         }
 
-        impl<'de, T> Visitor<'de> for OrVisitor<'de, T>
+        impl<'de, T> Visitor<'de> for OrVisitor<T>
         where
-            for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
+            T: Condition,
         {
             type Value = Or<T>;
 
@@ -562,10 +562,11 @@ where
     }
 }
 
-impl<'de, T, U> Deserialize<'de> for Function<'de, T, U>
+#[allow(single_use_lifetimes)]
+impl<'de, T, U> Deserialize<'de> for Function<T, U>
 where
-    T: Serialize + Deserialize<'de>,
-    U: Fn(&T) -> bool + Serialize + Deserialize<'de> + 'de,
+    T: Serialize + for<'a> Deserialize<'a>,
+    U: Fn(&T) -> bool + Serialize + for<'a> Deserialize<'a>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -606,19 +607,19 @@ where
             }
         }
 
-        struct FunctionVisitor<'de, T, U>
+        struct FunctionVisitor<T, U>
         where
-            T: Serialize + Deserialize<'de>,
-            U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
+            T: Serialize + for<'de> Deserialize<'de>,
+            U: Fn(&T) -> bool + Serialize + for<'de> Deserialize<'de>,
         {
-            phantom: PhantomData<&'de T>,
-            phantom2: PhantomData<&'de U>,
+            phantom: PhantomData<T>,
+            phantom2: PhantomData<U>,
         };
 
-        impl<'de, T, U> FunctionVisitor<'de, T, U>
+        impl<T, U> FunctionVisitor<T, U>
         where
-            T: Serialize + Deserialize<'de>,
-            U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
+            T: Serialize + for<'de> Deserialize<'de>,
+            U: Fn(&T) -> bool + Serialize + for<'de> Deserialize<'de>,
         {
             fn new() -> Self {
                 Self {
@@ -628,18 +629,18 @@ where
             }
         }
 
-        impl<'de, T, U> Visitor<'de> for FunctionVisitor<'de, T, U>
+        impl<'de, T, U> Visitor<'de> for FunctionVisitor<T, U>
         where
-            T: Serialize + Deserialize<'de>,
-            U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
+            T: Serialize + for<'a> Deserialize<'a>,
+            U: Fn(&T) -> bool + Serialize + for<'a> Deserialize<'a>,
         {
-            type Value = Function<'de, T, U>;
+            type Value = Function<T, U>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("struct Function")
             }
 
-            fn visit_seq<V>(self, mut seq: V) -> Result<Function<'de, T, U>, V::Error>
+            fn visit_seq<V>(self, mut seq: V) -> Result<Function<T, U>, V::Error>
             where
                 V: SeqAccess<'de>,
             {
@@ -652,7 +653,7 @@ where
                 Ok(Function::new(data, condition))
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<Function<'de, T, U>, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<Function<T, U>, V::Error>
             where
                 V: MapAccess<'de>,
             {

@@ -1,10 +1,9 @@
 use serde::{Deserialize, Serialize};
-use std::marker::PhantomData;
 
 /// A conditional weight that must evaluate as true in order to be avaliable to
 /// make an edge clear to traverse.
 #[allow(single_use_lifetimes)]
-pub trait Condition<'de>: Serialize + Deserialize<'de> {
+pub trait Condition: Serialize + for<'de> Deserialize<'de> {
     /// Returns whether the node can be traversed based on its criteria.
     fn evaluate(&self) -> bool;
 }
@@ -13,7 +12,7 @@ pub trait Condition<'de>: Serialize + Deserialize<'de> {
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct True {}
 
-impl Condition<'_> for True {
+impl Condition for True {
     fn evaluate(&self) -> bool {
         true
     }
@@ -24,14 +23,15 @@ impl Condition<'_> for True {
 #[derive(Copy, Clone, Debug, Serialize)]
 pub struct Not<T>
 where
-    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
+    T: Condition,
 {
-    condition: T,
+    /// The condition to evaluate on.
+    pub condition: T,
 }
 
 impl<T> Not<T>
 where
-    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
+    T: Condition,
 {
     /// Create a new `Not` condition.
     pub fn new(condition: T) -> Self {
@@ -39,9 +39,9 @@ where
     }
 }
 
-impl<'de, T: 'de> Condition<'de> for Not<T>
+impl<T> Condition for Not<T>
 where
-    for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
+    T: Condition,
 {
     fn evaluate(&self) -> bool {
         !self.condition.evaluate()
@@ -53,15 +53,17 @@ where
 #[derive(Copy, Clone, Debug, Serialize)]
 pub struct And<T>
 where
-    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
+    T: Condition,
 {
-    left: T,
-    right: T,
+    /// The first condition to evaluate on.
+    pub left: T,
+    /// The second condition to evaluate on.
+    pub right: T,
 }
 
 impl<T> And<T>
 where
-    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
+    T: Condition,
 {
     /// Create a new `And` condition.
     pub fn new(left: T, right: T) -> Self {
@@ -69,9 +71,9 @@ where
     }
 }
 
-impl<'de, T: 'de> Condition<'de> for And<T>
+impl<T> Condition for And<T>
 where
-    for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
+    T: Condition,
 {
     fn evaluate(&self) -> bool {
         self.left.evaluate() && self.right.evaluate()
@@ -83,15 +85,17 @@ where
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct Or<T>
 where
-    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
+    T: Condition,
 {
-    left: T,
-    right: T,
+    /// The first condition to evaluate on.
+    pub left: T,
+    /// The second condition to evaluate on.
+    pub right: T,
 }
 
 impl<T> Or<T>
 where
-    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
+    T: Condition,
 {
     /// Create a new `Or` condition.
     pub fn new(left: T, right: T) -> Self {
@@ -99,9 +103,9 @@ where
     }
 }
 
-impl<'de, T: 'de> Condition<'de> for Or<T>
+impl<T> Condition for Or<T>
 where
-    for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
+    T: Condition,
 {
     fn evaluate(&self) -> bool {
         self.left.evaluate() || self.right.evaluate()
@@ -114,36 +118,35 @@ where
 /// [`Deserialize`] traits, you can use the
 /// [`serde_closure` crate](https://docs.rs/serde_closure).
 #[derive(Copy, Clone, Debug, Serialize)]
-pub struct Function<'de, T, U>
+#[allow(single_use_lifetimes)]
+pub struct Function<T, U>
 where
-    T: Serialize + Deserialize<'de>,
-    U: Fn(&T) -> bool + Serialize + Deserialize<'de>,
+    T: Serialize + for<'de> Deserialize<'de>,
+    U: Fn(&T) -> bool + Serialize + for<'de> Deserialize<'de>,
 {
-    data: T,
-    condition: U,
-    #[serde(skip)]
-    phantom: PhantomData<&'de T>,
+    /// The data to pass to the closure.
+    pub data: T,
+    /// The closure with which to evaluate the data.
+    pub condition: U,
 }
 
-impl<'de, T, U> Function<'de, T, U>
+#[allow(single_use_lifetimes)]
+impl<T, U> Function<T, U>
 where
-    T: Serialize + Deserialize<'de>,
-    U: Fn(&T) -> bool + Serialize + Deserialize<'de> + 'de,
+    T: Serialize + for<'de> Deserialize<'de>,
+    U: Fn(&T) -> bool + Serialize + for<'de> Deserialize<'de>,
 {
     /// Create a new `Function` condition.
     pub fn new(data: T, condition: U) -> Self {
-        Self {
-            data,
-            condition,
-            phantom: PhantomData,
-        }
+        Self { data, condition }
     }
 }
 
-impl<'de, T, U> Condition<'de> for Function<'de, T, U>
+#[allow(single_use_lifetimes)]
+impl<T, U> Condition for Function<T, U>
 where
-    T: Serialize + Deserialize<'de>,
-    U: Fn(&T) -> bool + Serialize + Deserialize<'de> + 'de,
+    T: Serialize + for<'de> Deserialize<'de>,
+    U: Fn(&T) -> bool + Serialize + for<'de> Deserialize<'de>,
 {
     fn evaluate(&self) -> bool {
         (self.condition)(&self.data)

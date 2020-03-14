@@ -14,6 +14,7 @@
     unused_qualifications,
     variant_size_differences
 )]
+
 use condition::Condition;
 use petgraph::{
     graph::{Edges, Graph, NodeIndex},
@@ -21,7 +22,7 @@ use petgraph::{
 };
 #[allow(unused_imports)]
 use rand::seq::IteratorRandom;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 /// Conditions
 pub mod condition;
@@ -35,10 +36,20 @@ type Node = String;
 #[derive(Serialize, Debug)]
 pub struct Edge<T>
 where
-    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
+    T: Condition,
 {
     /// The condition for traversing.
     pub condition: T,
+}
+
+impl<T> Edge<T>
+where
+    T: Condition,
+{
+    /// Create a new edge.
+    pub fn new(condition: T) -> Self {
+        Self { condition }
+    }
 }
 
 /// A dialogue graph consisting of dialogue nodes connected by conditional
@@ -46,7 +57,7 @@ where
 #[derive(Serialize, Debug)]
 pub struct DialogueGraph<T>
 where
-    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
+    T: Condition,
 {
     /// The underlying graph.
     pub data: Graph<Node, Edge<T>, Directed, u32>,
@@ -54,7 +65,7 @@ where
 
 impl<T> DialogueGraph<T>
 where
-    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
+    T: Condition,
 {
     /// Create a new DialogueGraph instance.
     pub fn new() -> Self {
@@ -85,14 +96,14 @@ where
 #[allow(missing_debug_implementations)]
 pub struct OpenEdges<'a, T>
 where
-    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
+    T: Condition,
 {
     edges: Edges<'a, Edge<T>, Directed>,
 }
 
 impl<'a, T> Iterator for OpenEdges<'a, T>
 where
-    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
+    T: Condition,
 {
     type Item = &'a Edge<T>;
     fn next(&mut self) -> Option<&'a Edge<T>> {
