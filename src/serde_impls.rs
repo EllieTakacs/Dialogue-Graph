@@ -109,7 +109,7 @@ where
             }
         }
 
-        const FIELDS: &'static [&'static str] = &["condition"];
+        const FIELDS: &[&str] = &["condition"];
         deserializer.deserialize_struct("Edge", FIELDS, EdgeVisitor::new())
     }
 }
@@ -214,7 +214,7 @@ where
             }
         }
 
-        const FIELDS: &'static [&'static str] = &["data"];
+        const FIELDS: &[&str] = &["data"];
         deserializer.deserialize_struct("DialogueGraph", FIELDS, DialogueGraphVisitor::new())
     }
 }
@@ -319,7 +319,7 @@ where
             }
         }
 
-        const FIELDS: &'static [&'static str] = &["condition"];
+        const FIELDS: &[&str] = &["condition"];
         deserializer.deserialize_struct("Not", FIELDS, NotVisitor::new())
     }
 }
@@ -438,7 +438,7 @@ where
             }
         }
 
-        const FIELDS: &'static [&'static str] = &["left", "right"];
+        const FIELDS: &[&str] = &["left", "right"];
         deserializer.deserialize_struct("And", FIELDS, AndVisitor::new())
     }
 }
@@ -557,7 +557,7 @@ where
             }
         }
 
-        const FIELDS: &'static [&'static str] = &["left", "right"];
+        const FIELDS: &[&str] = &["left", "right"];
         deserializer.deserialize_struct("Or", FIELDS, OrVisitor::new())
     }
 }
@@ -683,7 +683,7 @@ where
             }
         }
 
-        const FIELDS: &'static [&'static str] = &["data", "condition"];
+        const FIELDS: &[&str] = &["data", "condition"];
         deserializer.deserialize_struct("Function", FIELDS, FunctionVisitor::new())
     }
 }
