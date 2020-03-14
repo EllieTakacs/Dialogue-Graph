@@ -9,9 +9,9 @@ use serde::{
 use std::fmt;
 use std::marker::PhantomData;
 
-impl<'de, T> Deserialize<'de> for Edge<'de, T>
+impl<'de, T> Deserialize<'de> for Edge<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'a> T: Condition<'a> + Serialize + Deserialize<'a> + 'de,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -28,10 +28,10 @@ where
             {
                 struct FieldVisitor;
 
-                impl<'de> Visitor<'de> for FieldVisitor {
+                impl Visitor<'_> for FieldVisitor {
                     type Value = Field;
 
-                    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                         formatter.write_str("`condition`")
                     }
 
@@ -70,28 +70,25 @@ where
 
         impl<'de, T> Visitor<'de> for EdgeVisitor<'de, T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
         {
-            type Value = Edge<'de, T>;
+            type Value = Edge<T>;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("struct Edge")
             }
 
-            fn visit_seq<V>(self, mut seq: V) -> Result<Edge<'de, T>, V::Error>
+            fn visit_seq<V>(self, mut seq: V) -> Result<Edge<T>, V::Error>
             where
                 V: SeqAccess<'de>,
             {
                 let condition = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(0, &self))?;
-                Ok(Edge {
-                    condition,
-                    phantom: PhantomData,
-                })
+                Ok(Edge { condition })
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<Edge<'de, T>, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<Edge<T>, V::Error>
             where
                 V: MapAccess<'de>,
             {
@@ -108,10 +105,7 @@ where
                 }
 
                 let condition = condition.ok_or_else(|| de::Error::missing_field("condition"))?;
-                Ok(Edge {
-                    condition,
-                    phantom: PhantomData,
-                })
+                Ok(Edge { condition })
             }
         }
 
@@ -120,9 +114,9 @@ where
     }
 }
 
-impl<'a, 'de, T> Deserialize<'de> for DialogueGraph<'a, 'de, T>
+impl<'de, T> Deserialize<'de> for DialogueGraph<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'a> T: Condition<'a> + Serialize + Deserialize<'a> + 'de,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -139,10 +133,10 @@ where
             {
                 struct FieldVisitor;
 
-                impl<'de> Visitor<'de> for FieldVisitor {
+                impl Visitor<'_> for FieldVisitor {
                     type Value = Field;
 
-                    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                         formatter.write_str("`condition`")
                     }
 
@@ -161,50 +155,45 @@ where
             }
         }
 
-        struct DialogueGraphVisitor<'a, 'de, T>
+        struct DialogueGraphVisitor<'de, T>
         where
             T: Condition<'de> + Serialize + Deserialize<'de>,
         {
             phantom: PhantomData<&'de T>,
-            phantom2: PhantomData<&'a T>,
         };
 
-        impl<'a, 'de, T> DialogueGraphVisitor<'a, 'de, T>
+        impl<'de, T> DialogueGraphVisitor<'de, T>
         where
             T: Condition<'de> + Serialize + Deserialize<'de>,
         {
             fn new() -> Self {
                 Self {
                     phantom: PhantomData,
-                    phantom2: PhantomData,
                 }
             }
         }
 
-        impl<'a, 'de, T> Visitor<'de> for DialogueGraphVisitor<'a, 'de, T>
+        impl<'de, T> Visitor<'de> for DialogueGraphVisitor<'de, T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
         {
-            type Value = DialogueGraph<'a, 'de, T>;
+            type Value = DialogueGraph<T>;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("struct Edge")
             }
 
-            fn visit_seq<V>(self, mut seq: V) -> Result<DialogueGraph<'a, 'de, T>, V::Error>
+            fn visit_seq<V>(self, mut seq: V) -> Result<DialogueGraph<T>, V::Error>
             where
                 V: SeqAccess<'de>,
             {
                 let data = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(0, &self))?;
-                Ok(DialogueGraph {
-                    data,
-                    phantom: PhantomData,
-                })
+                Ok(DialogueGraph { data })
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<DialogueGraph<'a, 'de, T>, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<DialogueGraph<T>, V::Error>
             where
                 V: MapAccess<'de>,
             {
@@ -221,10 +210,7 @@ where
                 }
 
                 let data = data.ok_or_else(|| de::Error::missing_field("condition"))?;
-                Ok(DialogueGraph {
-                    data,
-                    phantom: PhantomData,
-                })
+                Ok(DialogueGraph { data })
             }
         }
 
@@ -233,9 +219,9 @@ where
     }
 }
 
-impl<'de, T> Deserialize<'de> for Not<'de, T>
+impl<'de, T> Deserialize<'de> for Not<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'a> T: Condition<'a> + Serialize + Deserialize<'a> + 'de,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -252,10 +238,10 @@ where
             {
                 struct FieldVisitor;
 
-                impl<'de> Visitor<'de> for FieldVisitor {
+                impl Visitor<'_> for FieldVisitor {
                     type Value = Field;
 
-                    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                         formatter.write_str("`condition`")
                     }
 
@@ -294,15 +280,15 @@ where
 
         impl<'de, T> Visitor<'de> for NotVisitor<'de, T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
         {
-            type Value = Not<'de, T>;
+            type Value = Not<T>;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("struct Not")
             }
 
-            fn visit_seq<V>(self, mut seq: V) -> Result<Not<'de, T>, V::Error>
+            fn visit_seq<V>(self, mut seq: V) -> Result<Not<T>, V::Error>
             where
                 V: SeqAccess<'de>,
             {
@@ -312,7 +298,7 @@ where
                 Ok(Not::new(condition))
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<Not<'de, T>, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<Not<T>, V::Error>
             where
                 V: MapAccess<'de>,
             {
@@ -338,9 +324,9 @@ where
     }
 }
 
-impl<'de, T> Deserialize<'de> for And<'de, T>
+impl<'de, T> Deserialize<'de> for And<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'a> T: Condition<'a> + Serialize + Deserialize<'a> + 'de,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -358,10 +344,10 @@ where
             {
                 struct FieldVisitor;
 
-                impl<'de> Visitor<'de> for FieldVisitor {
+                impl Visitor<'_> for FieldVisitor {
                     type Value = Field;
 
-                    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                         formatter.write_str("`left` or `right`")
                     }
 
@@ -401,15 +387,15 @@ where
 
         impl<'de, T> Visitor<'de> for AndVisitor<'de, T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
         {
-            type Value = And<'de, T>;
+            type Value = And<T>;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("struct And")
             }
 
-            fn visit_seq<V>(self, mut seq: V) -> Result<And<'de, T>, V::Error>
+            fn visit_seq<V>(self, mut seq: V) -> Result<And<T>, V::Error>
             where
                 V: SeqAccess<'de>,
             {
@@ -422,7 +408,7 @@ where
                 Ok(And::new(left, right))
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<And<'de, T>, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<And<T>, V::Error>
             where
                 V: MapAccess<'de>,
             {
@@ -457,9 +443,9 @@ where
     }
 }
 
-impl<'de, T> Deserialize<'de> for Or<'de, T>
+impl<'de, T> Deserialize<'de> for Or<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'a> T: Condition<'a> + Serialize + Deserialize<'a> + 'de,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -477,10 +463,10 @@ where
             {
                 struct FieldVisitor;
 
-                impl<'de> Visitor<'de> for FieldVisitor {
+                impl Visitor<'_> for FieldVisitor {
                     type Value = Field;
 
-                    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                         formatter.write_str("`left` or `right`")
                     }
 
@@ -520,15 +506,15 @@ where
 
         impl<'de, T> Visitor<'de> for OrVisitor<'de, T>
         where
-            T: Condition<'de> + Serialize + Deserialize<'de>,
+            for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
         {
-            type Value = Or<'de, T>;
+            type Value = Or<T>;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("struct Or")
             }
 
-            fn visit_seq<V>(self, mut seq: V) -> Result<Or<'de, T>, V::Error>
+            fn visit_seq<V>(self, mut seq: V) -> Result<Or<T>, V::Error>
             where
                 V: SeqAccess<'de>,
             {
@@ -541,7 +527,7 @@ where
                 Ok(Or::new(left, right))
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<Or<'de, T>, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<Or<T>, V::Error>
             where
                 V: MapAccess<'de>,
             {
@@ -597,10 +583,10 @@ where
             {
                 struct FieldVisitor;
 
-                impl<'de> Visitor<'de> for FieldVisitor {
+                impl Visitor<'_> for FieldVisitor {
                     type Value = Field;
 
-                    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                         formatter.write_str("`data` or `condition`")
                     }
 
@@ -649,7 +635,7 @@ where
         {
             type Value = Function<'de, T, U>;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("struct Function")
             }
 

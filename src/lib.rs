@@ -6,8 +6,8 @@ use petgraph::{
 #[allow(unused_imports)]
 use rand::seq::IteratorRandom;
 use serde::{Deserialize, Serialize};
-use std::marker::PhantomData;
 
+/// Conditions
 pub mod condition;
 mod serde_impls;
 
@@ -16,51 +16,49 @@ type Node = String;
 
 /// A directed connection between two `Node` objects, with a condition that
 /// predicates the ability to traverse it.
-#[derive(Serialize)]
-pub struct Edge<'de, T>
+#[derive(Serialize, Debug)]
+pub struct Edge<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
 {
+    /// The condition for traversing.
     pub condition: T,
-    #[serde(skip)]
-    phantom: PhantomData<&'de T>,
 }
 
 /// A dialogue graph consisting of dialogue nodes connected by conditional
 /// edges.
-#[derive(Serialize)]
-pub struct DialogueGraph<'a, 'de, T>
+#[derive(Serialize, Debug)]
+pub struct DialogueGraph<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
 {
-    pub data: Graph<Node, Edge<'de, T>, Directed, u32>,
-    #[serde(skip)]
-    phantom: PhantomData<&'a T>,
+    /// The underlying graph.
+    pub data: Graph<Node, Edge<T>, Directed, u32>,
 }
 
-impl<'a, 'de, T> DialogueGraph<'a, 'de, T>
+impl<T> DialogueGraph<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
 {
+    /// Create a new DialogueGraph instance.
     pub fn new() -> Self {
-        Self {
-            data: Graph::new(),
-            phantom: PhantomData,
-        }
+        Self { data: Graph::new() }
     }
 
     /// Evaluates the condition to determine whether the edge can be traversed.
-    pub fn open(edge: Edge<'de, T>) -> bool {
+    pub fn open(edge: Edge<T>) -> bool {
         edge.condition.evaluate()
     }
 
     /// Opposite of `open`, evaluates the condition to determine whether the
     /// edge is closed off.
-    pub fn closed(edge: Edge<'de, T>) -> bool {
+    pub fn closed(edge: Edge<T>) -> bool {
         !DialogueGraph::open(edge)
     }
 
-    pub fn open_edges(&'a self, node: NodeIndex) -> OpenEdges<'a, 'de, T> {
+    /// Returns an iterator over the open edges connected to the given node
+    /// index.
+    pub fn open_edges<'a, 'de>(&'a self, node: NodeIndex) -> OpenEdges<'a, T> {
         OpenEdges {
             edges: self.data.edges(node),
         }
@@ -68,19 +66,20 @@ where
 }
 
 /// Iterator over open edges leading out of a given node.
-pub struct OpenEdges<'a, 'de, T>
+#[allow(missing_debug_implementations)]
+pub struct OpenEdges<'a, T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
 {
-    edges: Edges<'a, Edge<'de, T>, Directed>,
+    edges: Edges<'a, Edge<T>, Directed>,
 }
 
-impl<'a, 'de, T> Iterator for OpenEdges<'a, 'de, T>
+impl<'a, T> Iterator for OpenEdges<'a, T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
 {
-    type Item = &'a Edge<'de, T>;
-    fn next(&mut self) -> Option<&'a Edge<'de, T>> {
+    type Item = &'a Edge<T>;
+    fn next(&mut self) -> Option<&'a Edge<T>> {
         let mut result = None;
         while let Some(edge) = self.edges.next() {
             if edge.weight().condition.evaluate() {

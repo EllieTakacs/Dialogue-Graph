@@ -12,7 +12,7 @@ pub trait Condition<'de>: Serialize + Deserialize<'de> {
 #[derive(Serialize, Deserialize)]
 pub struct True {}
 
-impl<'de> Condition<'de> for True {
+impl Condition<'_> for True {
     fn evaluate(&self) -> bool {
         true
     }
@@ -23,28 +23,23 @@ impl<'de> Condition<'de> for True {
 #[derive(Serialize)]
 pub struct Not<'de, T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
 {
     condition: T,
-    #[serde(skip)]
-    phantom: PhantomData<&'de T>,
 }
 
-impl<'de, T> Not<'de, T>
+impl<T> Not<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
 {
     pub fn new(condition: T) -> Self {
-        Self {
-            condition,
-            phantom: PhantomData,
-        }
+        Self { condition }
     }
 }
 
-impl<'de, T> Condition<'de> for Not<'de, T>
+impl<'de, T: 'de> Condition<'de> for Not<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
 {
     fn evaluate(&self) -> bool {
         !self.condition.evaluate()
@@ -56,30 +51,24 @@ where
 #[derive(Serialize)]
 pub struct And<'de, T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
 {
     left: T,
     right: T,
-    #[serde(skip)]
-    phantom: PhantomData<&'de T>,
 }
 
-impl<'de, T> And<'de, T>
+impl<T> And<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
 {
     pub fn new(left: T, right: T) -> Self {
-        Self {
-            left,
-            right,
-            phantom: PhantomData,
-        }
+        Self { left, right }
     }
 }
 
-impl<'de, T> Condition<'de> for And<'de, T>
+impl<'de, T: 'de> Condition<'de> for And<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
 {
     fn evaluate(&self) -> bool {
         self.left.evaluate() && self.right.evaluate()
@@ -91,30 +80,24 @@ where
 #[derive(Serialize)]
 pub struct Or<'de, T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
 {
     left: T,
     right: T,
-    #[serde(skip)]
-    phantom: PhantomData<&'de T>,
 }
 
-impl<'de, T> Or<'de, T>
+impl<T> Or<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'de> T: Condition<'de> + Serialize + Deserialize<'de>,
 {
     pub fn new(left: T, right: T) -> Self {
-        Self {
-            left,
-            right,
-            phantom: PhantomData,
-        }
+        Self { left, right }
     }
 }
 
-impl<'de, T> Condition<'de> for Or<'de, T>
+impl<'de, T: 'de> Condition<'de> for Or<T>
 where
-    T: Condition<'de> + Serialize + Deserialize<'de>,
+    for<'a> T: Condition<'a> + Serialize + Deserialize<'a>,
 {
     fn evaluate(&self) -> bool {
         self.left.evaluate() || self.right.evaluate()
