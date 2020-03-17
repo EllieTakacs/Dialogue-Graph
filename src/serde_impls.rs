@@ -691,8 +691,15 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::condition::True;
+    use crate::{condition::True, Node};
     use serde_test::{assert_tokens, Token};
+
+    #[test]
+    fn test_ser_de_node() {
+        let node: Node = "Node".to_owned();
+
+        assert_tokens(&node, &[Token::Str("Node")]);
+    }
 
     #[test]
     fn test_ser_de_edge() {
