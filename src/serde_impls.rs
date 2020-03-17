@@ -324,9 +324,10 @@ where
     }
 }
 
-impl<'de, T> Deserialize<'de> for And<T>
+impl<'de, T, U> Deserialize<'de> for And<T, U>
 where
     T: Condition,
+    U: Condition,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -367,35 +368,40 @@ where
             }
         }
 
-        struct AndVisitor<T>
+        struct AndVisitor<T, U>
         where
             T: Condition,
+            U: Condition,
         {
             phantom: PhantomData<T>,
+            phantom2: PhantomData<U>,
         };
 
-        impl<T> AndVisitor<T>
+        impl<T, U> AndVisitor<T, U>
         where
             T: Condition,
+            U: Condition,
         {
             fn new() -> Self {
                 Self {
                     phantom: PhantomData,
+                    phantom2: PhantomData,
                 }
             }
         }
 
-        impl<'de, T> Visitor<'de> for AndVisitor<T>
+        impl<'de, T, U> Visitor<'de> for AndVisitor<T, U>
         where
             T: Condition,
+            U: Condition,
         {
-            type Value = And<T>;
+            type Value = And<T, U>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("struct And")
             }
 
-            fn visit_seq<V>(self, mut seq: V) -> Result<And<T>, V::Error>
+            fn visit_seq<V>(self, mut seq: V) -> Result<And<T, U>, V::Error>
             where
                 V: SeqAccess<'de>,
             {
@@ -408,12 +414,12 @@ where
                 Ok(And::new(left, right))
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<And<T>, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<And<T, U>, V::Error>
             where
                 V: MapAccess<'de>,
             {
                 let mut left: Option<T> = None;
-                let mut right: Option<T> = None;
+                let mut right: Option<U> = None;
                 while let Some(key) = map.next_key()? {
                     match key {
                         Field::Left => {
@@ -443,9 +449,10 @@ where
     }
 }
 
-impl<'de, T> Deserialize<'de> for Or<T>
+impl<'de, T, U> Deserialize<'de> for Or<T, U>
 where
     T: Condition,
+    U: Condition,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -486,35 +493,40 @@ where
             }
         }
 
-        struct OrVisitor<T>
+        struct OrVisitor<T, U>
         where
             T: Condition,
+            U: Condition,
         {
             phantom: PhantomData<T>,
+            phantom2: PhantomData<U>,
         };
 
-        impl<T> OrVisitor<T>
+        impl<T, U> OrVisitor<T, U>
         where
             T: Condition,
+            U: Condition,
         {
             fn new() -> Self {
                 Self {
                     phantom: PhantomData,
+                    phantom2: PhantomData,
                 }
             }
         }
 
-        impl<'de, T> Visitor<'de> for OrVisitor<T>
+        impl<'de, T, U> Visitor<'de> for OrVisitor<T, U>
         where
             T: Condition,
+            U: Condition,
         {
-            type Value = Or<T>;
+            type Value = Or<T, U>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("struct Or")
             }
 
-            fn visit_seq<V>(self, mut seq: V) -> Result<Or<T>, V::Error>
+            fn visit_seq<V>(self, mut seq: V) -> Result<Or<T, U>, V::Error>
             where
                 V: SeqAccess<'de>,
             {
@@ -527,7 +539,7 @@ where
                 Ok(Or::new(left, right))
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<Or<T>, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<Or<T, U>, V::Error>
             where
                 V: MapAccess<'de>,
             {

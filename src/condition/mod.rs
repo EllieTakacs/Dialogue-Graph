@@ -20,6 +20,14 @@ impl Condition for True {
 
 /// A condition that evaluates as true if its inner condition evaluates as
 /// false.
+///
+/// # Example use
+/// ```
+/// # use dialogue_graph::condition::{Condition, Not, True};
+/// let not = Not::new(True {});
+///
+/// assert_eq!(not.evaluate(), false);
+/// ```
 #[derive(Copy, Clone, Debug, Serialize, PartialEq, Eq)]
 pub struct Not<T>
 where
@@ -50,30 +58,43 @@ where
 
 /// A condition that evaluates as true if both inner conditions evaluate as
 /// true.
+///
+/// # Example use
+/// ```
+/// # use dialogue_graph::condition::{Condition, And, Not, True};
+/// let first = Not::new(True {});
+/// let second = True {};
+/// let and = And::new(first, second);
+///
+/// assert_eq!(and.evaluate(), false);
+/// ```
 #[derive(Copy, Clone, Debug, Serialize, PartialEq, Eq)]
-pub struct And<T>
+pub struct And<T, U>
 where
     T: Condition,
+    U: Condition,
 {
     /// The first condition to evaluate on.
     pub left: T,
     /// The second condition to evaluate on.
-    pub right: T,
+    pub right: U,
 }
 
-impl<T> And<T>
+impl<T, U> And<T, U>
 where
     T: Condition,
+    U: Condition,
 {
     /// Create a new `And` condition.
-    pub fn new(left: T, right: T) -> Self {
+    pub fn new(left: T, right: U) -> Self {
         Self { left, right }
     }
 }
 
-impl<T> Condition for And<T>
+impl<T, U> Condition for And<T, U>
 where
     T: Condition,
+    U: Condition,
 {
     fn evaluate(&self) -> bool {
         self.left.evaluate() && self.right.evaluate()
@@ -82,30 +103,45 @@ where
 
 /// A condition that evaluates as true if either inner condition evaluates as
 /// true.
+///
+/// # Example use
+/// ```
+/// # use dialogue_graph::condition::{Condition, Function, True, Not, Or};
+/// # use serde_closure::Fn;
+/// let first = True {};
+/// let second = Not::new(True {});
+///
+/// let or = Or::new(first, second);
+///
+/// assert_eq!(or.evaluate(), true);
+/// ```
 #[derive(Clone, Copy, Debug, Serialize, PartialEq, Eq)]
-pub struct Or<T>
+pub struct Or<T, U>
 where
     T: Condition,
+    U: Condition,
 {
     /// The first condition to evaluate on.
     pub left: T,
     /// The second condition to evaluate on.
-    pub right: T,
+    pub right: U,
 }
 
-impl<T> Or<T>
+impl<T, U> Or<T, U>
 where
     T: Condition,
+    U: Condition,
 {
     /// Create a new `Or` condition.
-    pub fn new(left: T, right: T) -> Self {
+    pub fn new(left: T, right: U) -> Self {
         Self { left, right }
     }
 }
 
-impl<T> Condition for Or<T>
+impl<T, U> Condition for Or<T, U>
 where
     T: Condition,
+    U: Condition,
 {
     fn evaluate(&self) -> bool {
         self.left.evaluate() || self.right.evaluate()
