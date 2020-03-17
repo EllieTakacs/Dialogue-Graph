@@ -715,7 +715,7 @@ mod test {
 
     #[test]
     fn test_ser_de_edge() {
-        let edge = Edge::new(True {});
+        let edge = Edge::new(True::new());
 
         assert_tokens(
             &edge,
@@ -773,7 +773,7 @@ mod test {
 
     #[test]
     fn test_ser_de_not() {
-        let not = Not::new(True {});
+        let not = Not::new(True::new());
 
         assert_tokens(
             &not,
@@ -795,7 +795,7 @@ mod test {
 
     #[test]
     fn test_ser_de_and() {
-        let and = And::new(True {}, True {});
+        let and = And::new(True::new(), True::new());
 
         assert_tokens(
             &and,
@@ -823,7 +823,7 @@ mod test {
 
     #[test]
     fn test_ser_de_or() {
-        let or = Or::new(True {}, True {});
+        let or = Or::new(True::new(), True::new());
 
         assert_tokens(
             &or,

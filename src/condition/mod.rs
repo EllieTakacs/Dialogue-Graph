@@ -9,8 +9,23 @@ pub trait Condition: Serialize + for<'de> Deserialize<'de> {
 }
 
 /// A condition that always evaluates to true.
+///
+/// # Example use
+/// ```
+/// # use dialogue_graph::condition::{Condition, True};
+/// let condition = True::new();
+///
+/// assert_eq!(condition.evaluate(), true);
+/// ```
 #[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct True {}
+
+impl True {
+    /// Create a new `True` condition.
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 impl Condition for True {
     fn evaluate(&self) -> bool {
@@ -24,7 +39,7 @@ impl Condition for True {
 /// # Example use
 /// ```
 /// # use dialogue_graph::condition::{Condition, Not, True};
-/// let not = Not::new(True {});
+/// let not = Not::new(True::new());
 ///
 /// assert_eq!(not.evaluate(), false);
 /// ```
@@ -62,8 +77,8 @@ where
 /// # Example use
 /// ```
 /// # use dialogue_graph::condition::{Condition, And, Not, True};
-/// let first = Not::new(True {});
-/// let second = True {};
+/// let first = Not::new(True::new());
+/// let second = True::new();
 /// let and = And::new(first, second);
 ///
 /// assert_eq!(and.evaluate(), false);
@@ -108,8 +123,8 @@ where
 /// ```
 /// # use dialogue_graph::condition::{Condition, Function, True, Not, Or};
 /// # use serde_closure::Fn;
-/// let first = True {};
-/// let second = Not::new(True {});
+/// let first = True::new();
+/// let second = Not::new(True::new());
 ///
 /// let or = Or::new(first, second);
 ///
