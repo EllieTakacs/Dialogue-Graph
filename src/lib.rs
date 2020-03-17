@@ -33,7 +33,7 @@ type Node = String;
 
 /// A directed connection between two `Node` objects, with a condition that
 /// predicates the ability to traverse it.
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub struct Edge<T>
 where
     T: Condition,
@@ -63,13 +63,39 @@ where
     pub data: Graph<Node, Edge<T>, Directed, u32>,
 }
 
+impl<T> PartialEq for DialogueGraph<T>
+where
+    T: Condition + PartialEq,
+{
+    /// Compare the two graphs' nodes and edges.
+    ///
+    /// Algorithm taken from [this comment on GitHub](https://github.com/petgraph/petgraph/issues/199#issuecomment-484077775).
+    fn eq(&self, other: &DialogueGraph<T>) -> bool {
+        let a_ns = self.data.raw_nodes().iter().map(|n| &n.weight);
+        let b_ns = other.data.raw_nodes().iter().map(|n| &n.weight);
+        let a_es = self
+            .data
+            .raw_edges()
+            .iter()
+            .map(|e| (e.source(), e.target(), &e.weight));
+        let b_es = other
+            .data
+            .raw_edges()
+            .iter()
+            .map(|e| (e.source(), e.target(), &e.weight));
+        a_ns.eq(b_ns) && a_es.eq(b_es)
+    }
+}
+
 impl<T> DialogueGraph<T>
 where
     T: Condition,
 {
     /// Create a new DialogueGraph instance.
     pub fn new() -> Self {
-        Self { data: Graph::new() }
+        Self {
+            data: Graph::<Node, Edge<T>>::new(),
+        }
     }
 
     /// Evaluates the condition to determine whether the edge can be traversed.

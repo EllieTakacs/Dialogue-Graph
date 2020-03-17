@@ -22,3 +22,7 @@ features = ["derive"]
 version = "^0.5.0"
 default-features = false
 features = ["serde-1"]
+
+[dev-dependencies]
+serde_test = "^1.0.104"
+serde_closure = "^0.2.10"

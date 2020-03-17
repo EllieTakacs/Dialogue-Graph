@@ -19,6 +19,8 @@ dependencies = [
  "petgraph",
  "rand",
  "serde",
+ "serde_closure",
+ "serde_test",
 ]
 
 [[package]]
@@ -70,6 +72,17 @@ name = "ppv-lite86"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74490b50b9fbe561ac330df47c08f3f33073d2d00c150f719147d7c54522fa1b"
+
+[[package]]
+name = "proc-macro-hack"
+version = "0.5.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ecd45702f76d6d3c75a80564378ae228a85f0b59d2f3ed43c91b4a69eb2ebfc5"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "proc-macro2"
@@ -140,6 +153,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_closure"
+version = "0.2.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b6719ea585b552087d0e23cd0a6c8d20b5debb08f24daf0cb82efc3c9211bca"
+dependencies = [
+ "proc-macro-hack",
+ "serde",
+ "serde_closure_derive",
+]
+
+[[package]]
+name = "serde_closure_derive"
+version = "0.2.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2dadae914a21522223ae3c6d5d21da5147a140af0e422c8b521a57a8983ebb3b"
+dependencies = [
+ "proc-macro-hack",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "serde_derive"
 version = "1.0.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -148,6 +184,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "serde_test"
+version = "1.0.104"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33f96dff8c3744387b53404ea33e834073b0791dcc1ea9c85b805745f9324704"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

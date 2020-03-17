@@ -9,7 +9,7 @@ pub trait Condition: Serialize + for<'de> Deserialize<'de> {
 }
 
 /// A condition that always evaluates to true.
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct True {}
 
 impl Condition for True {
@@ -20,7 +20,7 @@ impl Condition for True {
 
 /// A condition that evaluates as true if its inner condition evaluates as
 /// false.
-#[derive(Copy, Clone, Debug, Serialize)]
+#[derive(Copy, Clone, Debug, Serialize, PartialEq, Eq)]
 pub struct Not<T>
 where
     T: Condition,
@@ -50,7 +50,7 @@ where
 
 /// A condition that evaluates as true if both inner conditions evaluate as
 /// true.
-#[derive(Copy, Clone, Debug, Serialize)]
+#[derive(Copy, Clone, Debug, Serialize, PartialEq, Eq)]
 pub struct And<T>
 where
     T: Condition,
@@ -82,7 +82,7 @@ where
 
 /// A condition that evaluates as true if either inner condition evaluates as
 /// true.
-#[derive(Clone, Copy, Debug, Serialize)]
+#[derive(Clone, Copy, Debug, Serialize, PartialEq, Eq)]
 pub struct Or<T>
 where
     T: Condition,
@@ -117,7 +117,7 @@ where
 /// To create a closure that implements serde's [`Serialize`] and
 /// [`Deserialize`] traits, you can use the
 /// [`serde_closure` crate](https://docs.rs/serde_closure).
-#[derive(Copy, Clone, Debug, Serialize)]
+#[derive(Copy, Clone, Debug, Serialize, PartialEq, Eq)]
 #[allow(single_use_lifetimes)]
 pub struct Function<T, U>
 where

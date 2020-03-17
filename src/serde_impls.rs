@@ -687,3 +687,143 @@ where
         deserializer.deserialize_struct("Function", FIELDS, FunctionVisitor::new())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::condition::True;
+    use serde_test::{assert_tokens, Token};
+
+    #[test]
+    fn test_ser_de_edge() {
+        let edge = Edge::new(True {});
+
+        assert_tokens(
+            &edge,
+            &[
+                Token::Struct {
+                    name: "Edge",
+                    len: 1,
+                },
+                Token::Str("condition"),
+                Token::Struct {
+                    name: "True",
+                    len: 0,
+                },
+                Token::StructEnd,
+                Token::StructEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_ser_de_dialogue_graph() {
+        let graph = DialogueGraph::<True>::new();
+
+        assert_tokens(
+            &graph,
+            &[
+                Token::Struct {
+                    name: "DialogueGraph",
+                    len: 1,
+                },
+                Token::Str("data"),
+                Token::Struct {
+                    name: "Graph",
+                    len: 4,
+                },
+                Token::Str("nodes"),
+                Token::Seq { len: Some(0) },
+                Token::SeqEnd,
+                Token::Str("node_holes"),
+                Token::Seq { len: Some(0) },
+                Token::SeqEnd,
+                Token::Str("edge_property"),
+                Token::UnitVariant {
+                    name: "EdgeProperty",
+                    variant: "directed",
+                },
+                Token::Str("edges"),
+                Token::Seq { len: Some(0) },
+                Token::SeqEnd,
+                Token::StructEnd,
+                Token::StructEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_ser_de_not() {
+        let not = Not::new(True {});
+
+        assert_tokens(
+            &not,
+            &[
+                Token::Struct {
+                    name: "Not",
+                    len: 1,
+                },
+                Token::Str("condition"),
+                Token::Struct {
+                    name: "True",
+                    len: 0,
+                },
+                Token::StructEnd,
+                Token::StructEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_ser_de_and() {
+        let and = And::new(True {}, True {});
+
+        assert_tokens(
+            &and,
+            &[
+                Token::Struct {
+                    name: "And",
+                    len: 2,
+                },
+                Token::Str("left"),
+                Token::Struct {
+                    name: "True",
+                    len: 0,
+                },
+                Token::StructEnd,
+                Token::Str("right"),
+                Token::Struct {
+                    name: "True",
+                    len: 0,
+                },
+                Token::StructEnd,
+                Token::StructEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_ser_de_or() {
+        let or = Or::new(True {}, True {});
+
+        assert_tokens(
+            &or,
+            &[
+                Token::Struct { name: "Or", len: 2 },
+                Token::Str("left"),
+                Token::Struct {
+                    name: "True",
+                    len: 0,
+                },
+                Token::StructEnd,
+                Token::Str("right"),
+                Token::Struct {
+                    name: "True",
+                    len: 0,
+                },
+                Token::StructEnd,
+                Token::StructEnd,
+            ],
+        );
+    }
+}
