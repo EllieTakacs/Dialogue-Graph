@@ -826,4 +826,30 @@ mod test {
             ],
         );
     }
+
+    #[test]
+    fn test_ser_de_function() {
+        use serde_closure::Fn;
+
+        let data = 1;
+        let closure = Fn!(|x: &i32| x != &0);
+
+        let function = Function::new(data, closure);
+
+        assert_tokens(
+            &function,
+            &[
+                Token::Struct {
+                    name: "Function",
+                    len: 2,
+                },
+                Token::Str("data"),
+                Token::I32(1),
+                Token::Str("condition"),
+                Token::Struct { name: "Fn", len: 0 },
+                Token::StructEnd,
+                Token::StructEnd,
+            ],
+        );
+    }
 }
