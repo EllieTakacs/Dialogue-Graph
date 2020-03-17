@@ -117,6 +117,17 @@ where
 /// To create a closure that implements serde's [`Serialize`] and
 /// [`Deserialize`] traits, you can use the
 /// [`serde_closure` crate](https://docs.rs/serde_closure).
+///
+/// # Example use
+/// ```
+/// # use dialogue_graph::condition::{Condition, Function};
+/// # use serde_closure::Fn;
+/// let data = 1;
+/// let closure = Fn!(|x: &i32| *x > 0);
+///
+/// let function = Function::new(data, closure);
+/// assert!(function.evaluate());
+/// ```
 #[derive(Copy, Clone, Debug, Serialize, PartialEq, Eq)]
 #[allow(single_use_lifetimes)]
 pub struct Function<T, U>
