@@ -29,7 +29,7 @@ pub mod condition;
 mod serde_impls;
 
 /// A single unit of dialogue which makes up the `DialogueGraph`.
-type Node = String;
+pub type Node = String;
 
 /// A directed connection between two `Node` objects, with a condition that
 /// predicates the ability to traverse it.
